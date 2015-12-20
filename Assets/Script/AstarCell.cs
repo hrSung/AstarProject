@@ -2,20 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 
-public enum eCellState
-{
-    None = 0,   // 아무런 상태도 아님
-    Start,      // 시작 지점
-    Obstacle,   // 장애물(갈 수 없는 지점)
-    End,        // 도착 지점
-}
-
-public enum eOpenState
-{
-    None = 0,   // 세팅이 안된 값
-    Open,       // 열린 상태(탐색되지 않음.)
-    Close,      // 닫힌 상태(탐색됨.)
-}
 
 public class AstarCell : MonoBehaviour
 {
@@ -57,6 +43,11 @@ public class AstarCell : MonoBehaviour
         cellWidth = 50;
         cellHeight = 50;
 
+        m_lblF = transform.FindChild("f").FindChild("label").GetComponent<UILabel>();
+        m_lblG = transform.FindChild("g").FindChild("label").GetComponent<UILabel>();
+        m_lblH = transform.FindChild("h").FindChild("label").GetComponent<UILabel>();
+        m_lblOpenState = transform.FindChild("OpenState").FindChild("label").GetComponent<UILabel>();
+
         m_sprCell = gameObject.GetComponent<UISprite>();
 
         m_btnCell = gameObject.GetComponent<ButtonListener>();
@@ -75,6 +66,15 @@ public class AstarCell : MonoBehaviour
     {
         m_AstarCellInfo = _info;
         SetState();
+    }
+
+    public void SetDataView(AstarCellInfo _info)
+    {
+        m_AstarCellInfo = _info;
+        m_lblF.text = m_AstarCellInfo.f.ToString();
+        m_lblG.text = m_AstarCellInfo.g.ToString();
+        m_lblH.text = m_AstarCellInfo.h.ToString();
+        m_lblOpenState.text = m_AstarCellInfo.eOpenState.ToString();
     }
 
     private void OnClickCell(ButtonListener _btn)
