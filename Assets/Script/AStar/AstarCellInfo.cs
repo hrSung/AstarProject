@@ -9,6 +9,7 @@ public enum eCellState
     Start,      // 시작 지점
     Obstacle,   // 장애물(갈 수 없는 지점)
     End,        // 도착 지점
+    Path,       // 최종 경로
 }
 
 public enum eOpenState
@@ -40,9 +41,9 @@ public class AstarCellInfo
     public int g;
     public int h;
 
-    public eOpenState eOpenState = eOpenState.None;
-    public eCellState eCellState = eCellState.None;
-    public eDirection eDirection = eDirection.None;
+    public eOpenState openState = eOpenState.None;
+    public eCellState cellState = eCellState.None;
+    public eDirection direction = eDirection.None;
 
     public AstarCellInfo preAsterCell = null;
 
@@ -54,9 +55,9 @@ public class AstarCellInfo
         _info.f = f;
         _info.g = g;
         _info.h = h;
-        _info.eOpenState = eOpenState;
-        _info.eCellState = eCellState;
-        _info.eDirection = eDirection;
+        _info.openState = openState;
+        _info.cellState = cellState;
+        _info.direction = direction;
         _info.preAsterCell = preAsterCell;
 
         return _info;
@@ -65,6 +66,31 @@ public class AstarCellInfo
     public AstarCellInfo()
     {
 
+    }
+
+    public void SetInit()
+    {
+        f = 0;
+        g = 0;
+        h = 0;
+        openState = eOpenState.None;
+        cellState = eCellState.None;
+        direction = eDirection.None;
+        preAsterCell = null;
+    }
+
+    public void SetDataExceptCell()
+    {
+        f = 0;
+        g = 0;
+        h = 0;
+        openState = eOpenState.None;
+        if (cellState.Equals(eCellState.Path))
+        {
+            cellState = eCellState.None;
+        }
+        direction = eDirection.None;
+        preAsterCell = null;
     }
 
     public void SetCellState()
