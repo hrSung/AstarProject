@@ -65,7 +65,7 @@ public class AstarCellInfo
 
     public AstarCellInfo()
     {
-
+        SetInit();
     }
 
     public void SetInit()
