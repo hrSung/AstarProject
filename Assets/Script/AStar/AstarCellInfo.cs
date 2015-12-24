@@ -46,6 +46,7 @@ public class AstarCellInfo
     public eDirection direction = eDirection.None;
 
     public AstarCellInfo preAsterCell = null;
+    public AstarCellInfo NextAsterCell = null;
 
     public AstarCellInfo Clone()
     {
@@ -59,6 +60,7 @@ public class AstarCellInfo
         _info.cellState = cellState;
         _info.direction = direction;
         _info.preAsterCell = preAsterCell;
+        _info.NextAsterCell = NextAsterCell;
 
         return _info;
     }
@@ -77,6 +79,7 @@ public class AstarCellInfo
         cellState = eCellState.None;
         direction = eDirection.None;
         preAsterCell = null;
+        NextAsterCell = null;
     }
 
     public void SetDataExceptCell()
@@ -91,6 +94,7 @@ public class AstarCellInfo
         }
         direction = eDirection.None;
         preAsterCell = null;
+        NextAsterCell = null;
     }
 
     public void SetCellState()

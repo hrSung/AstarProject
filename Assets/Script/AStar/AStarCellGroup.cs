@@ -14,6 +14,8 @@ public class AStarCellGroup : MonoBehaviour
         End,
     }
 
+    public LineRenderer m_line;
+
     private AstarCell[][] m_CellList;
     private AstarCellInfo[][] m_CellInfoList;
     private AstarCellInfo m_StartCell;
@@ -170,16 +172,53 @@ public class AStarCellGroup : MonoBehaviour
                     if (info.Equals(m_EndCell))
                     {
                         m_eMoveEnd = eMoveCell.End;
+                        m_line.gameObject.SetActive(true);
+                        m_line.useWorldSpace = false;
+                        m_line.SetColors(Color.magenta, Color.magenta);
+                        m_line.SetWidth(0.01f, 0.01f);
+
+                        Vector3 vec;
+                        List<float> cX = new List<float>();
+                        List<float> cY = new List<float>();
                         int count = 1;
-                        AstarCellInfo _info = m_EndCell.preAsterCell;
-                        while (_info != null)
+                        AstarCellInfo curInfo = m_EndCell;
+                        AstarCellInfo preInfo = curInfo.preAsterCell;
+
+                        vec = m_CellList[curInfo.y][curInfo.x].transform.localPosition;
+                        cX.Add(vec.x);
+                        cY.Add(vec.y);
+                        while (preInfo != null)
                         {
-                            _info.cellState = eCellState.Path;
-                            _info.f = count;
-                            m_CellList[_info.y][_info.x].SetData(_info);
-                            _info = _info.preAsterCell;
+                            preInfo.NextAsterCell = curInfo;
+
+                            if (!preInfo.Equals(m_StartCell))
+                            {
+                                preInfo.cellState = eCellState.Path;
+                                preInfo.f = count;
+                                m_CellList[preInfo.y][preInfo.x].SetData(preInfo);
+                            }
+
+                            vec = m_CellList[preInfo.y][preInfo.x].transform.localPosition;
+                            cX.Add(vec.x);
+                            cY.Add(vec.y);
+
+                            curInfo = preInfo;
+                            preInfo = preInfo.preAsterCell;
                             count++;
-                            if (_info.Equals(m_StartCell)) return;
+                        }
+
+                        //Vector3[] arrPoint = points.ToArray();
+                        int totalTick = cX.Count * 4;
+                        Tween t = new Tween(totalTick);
+
+                        BSplineUtil.setSplineCurveX(t, cX.ToArray(), 1f, 0, totalTick);
+                        BSplineUtil.setSplineCurveY(t, cY.ToArray(), 1f, 0, totalTick);
+
+                        m_line.SetVertexCount(totalTick);
+
+                        for (; t.tick < t.totalTick; t.tick++)
+                        {
+                            m_line.SetPosition(t.tick, new Vector3(t.x[t.tick], t.y[t.tick]));
                         }
                     }
                 }
@@ -200,6 +239,7 @@ public class AStarCellGroup : MonoBehaviour
                 }
             }
 
+            m_line.gameObject.SetActive(false);
             m_StartCell = null;
             m_EndCell = null;
             m_OpenCellList = new List<AstarCellInfo>();
@@ -211,7 +251,6 @@ public class AStarCellGroup : MonoBehaviour
             while (!m_eMoveEnd.Equals(eMoveCell.End))
             {
                 m_isClick = false;
-                if (m_eMoveEnd.Equals(eMoveCell.End)) return;
                 m_eMoveEnd = eMoveCell.Start;
 
                 if (m_StartCell.openState.Equals(eOpenState.None))
@@ -293,7 +332,7 @@ public class AStarCellGroup : MonoBehaviour
                     list = list.FindAll(x => x.h.Equals(min));
                     AstarCellInfo info = list[0];
 
-                    Debug.Log("info.x : " + info.x + ", info.y : " + info.y);
+                    //Debug.Log("info.x : " + info.x + ", info.y : " + info.y);
 
                     if (info != null)
                     {
@@ -306,16 +345,54 @@ public class AStarCellGroup : MonoBehaviour
                 }
             }
 
+            //m_line = new LineRenderer();
+            m_line.gameObject.SetActive(true);
+            m_line.useWorldSpace = false;
+            m_line.SetColors(Color.magenta, Color.magenta);
+            m_line.SetWidth(0.01f, 0.01f);
+
+            Vector3 vec;
+            List<float> cX = new List<float>();
+            List<float> cY = new List<float>();
             int count = 1;
-            AstarCellInfo _info = m_EndCell.preAsterCell;
-            while (_info != null)
+            AstarCellInfo curInfo = m_EndCell;
+            AstarCellInfo preInfo = curInfo.preAsterCell;
+
+            vec = m_CellList[curInfo.y][curInfo.x].transform.localPosition;
+            cX.Add(vec.x);
+            cY.Add(vec.y);
+            while (preInfo != null)
             {
-                _info.cellState = eCellState.Path;
-                _info.f = count;
-                m_CellList[_info.y][_info.x].SetData(_info);
-                _info = _info.preAsterCell;
+                preInfo.NextAsterCell = curInfo;
+
+                if (!preInfo.Equals(m_StartCell))
+                {
+                    preInfo.cellState = eCellState.Path;
+                    preInfo.f = count;
+                    m_CellList[preInfo.y][preInfo.x].SetData(preInfo);
+                }
+
+                vec = m_CellList[preInfo.y][preInfo.x].transform.localPosition;
+                cX.Add(vec.x);
+                cY.Add(vec.y);
+
+                curInfo = preInfo;
+                preInfo = preInfo.preAsterCell;
                 count++;
-                if (_info.Equals(m_StartCell)) return;
+            }
+
+            //Vector3[] arrPoint = points.ToArray();
+            int totalTick = cX.Count * 4;
+            Tween t = new Tween(totalTick);
+
+            BSplineUtil.setSplineCurveX(t, cX.ToArray(), 1f, 0, totalTick);
+            BSplineUtil.setSplineCurveY(t, cY.ToArray(), 1f, 0, totalTick);
+
+            m_line.SetVertexCount(totalTick);
+
+            for (; t.tick < t.totalTick; t.tick++)
+            {
+                m_line.SetPosition(t.tick, new Vector3(t.x[t.tick], t.y[t.tick]));
             }
         }
         else if (Input.GetKeyUp(KeyCode.Alpha4))
@@ -331,6 +408,7 @@ public class AStarCellGroup : MonoBehaviour
                 }
             }
 
+            m_line.gameObject.SetActive(false);
             m_OpenCellList = new List<AstarCellInfo>();
             m_isClick = true;
             m_eMoveEnd = eMoveCell.Ready;
@@ -387,8 +465,6 @@ public class AStarCellGroup : MonoBehaviour
     {
         int x = _info.x;
         int y = _info.y;
-        int sX = m_StartCell.x;
-        int sY = m_StartCell.y;
         int eX = m_EndCell.x;
         int eY = m_EndCell.y;
         int count = 0;
@@ -619,151 +695,6 @@ public class AStarCellGroup : MonoBehaviour
                 m_CellList[tempY][tempX].SetDataView(info);
             }
         }
-
-        #region 이전 코드
-        //int tempY = y - 1;
-        //AstarCellInfo[] arrInfo = tempY < 0 || tempY > widthCnt - 1 ? null : m_CellInfoList[tempY];
-        //if (arrInfo != null)
-        //{
-        //    int tempX = x - 1;
-        //    AstarCellInfo info = tempX < 0 || tempX > heightCnt - 1 ? null : arrInfo[tempX];
-        //    if (info != null && !info.eCellState.Equals(eCellState.Obstacle)
-        //        && !info.eOpenState.Equals(eOpenState.Close))
-        //    {
-        //        info.h = Mathf.Abs(sX - info.x) + Mathf.Abs(sY - info.y) - 1;
-        //        info.g = Mathf.Abs(info.x - eX) + Mathf.Abs(info.y - eY);
-        //        info.f = info.h + info.g;
-
-        //        info.eOpenState = eOpenState.Open;
-        //        info.eDirection = eDirection.NorthWest;
-        //        info.preAsterCell = _info;
-        //        m_OpenCellList.Add(info);
-        //        m_CellList[tempY][tempX].SetDataView(info);
-        //    }
-
-        //    tempX = x;
-        //    info = tempX < 0 || tempX > heightCnt - 1 ? null : arrInfo[tempX];
-        //    if (info != null && !info.eCellState.Equals(eCellState.Obstacle)
-        //        && !info.eOpenState.Equals(eOpenState.Close))
-        //    {
-        //        info.h = Mathf.Abs(sX - info.x) + Mathf.Abs(sY - info.y);
-        //        info.g = Mathf.Abs(info.x - eX) + Mathf.Abs(info.y - eY);
-        //        info.f = info.h + info.g;
-
-        //        info.eOpenState = eOpenState.Open;
-        //        info.eDirection = eDirection.North;
-        //        info.preAsterCell = _info;
-        //        m_OpenCellList.Add(info);
-        //        m_CellList[tempY][tempX].SetDataView(info);
-        //    }
-
-        //    tempX = x + 1;
-        //    info = tempX < 0 || tempX > heightCnt - 1 ? null : arrInfo[tempX];
-        //    if (info != null && !info.eCellState.Equals(eCellState.Obstacle)
-        //        && !info.eOpenState.Equals(eOpenState.Close))
-        //    {
-        //        info.h = Mathf.Abs(sX - info.x) + Mathf.Abs(sY - info.y) - 1;
-        //        info.g = Mathf.Abs(info.x - eX) + Mathf.Abs(info.y - eY);
-        //        info.f = info.h + info.g;
-
-        //        info.eOpenState = eOpenState.Open;
-        //        info.eDirection = eDirection.NorthEast;
-        //        info.preAsterCell = _info;
-        //        m_OpenCellList.Add(info);
-        //        m_CellList[tempY][tempX].SetDataView(info);
-        //    }
-        //}
-
-        //tempY = y;
-        //arrInfo = tempY < 0 || tempY > widthCnt - 1 ? null : m_CellInfoList[tempY];
-        //if (arrInfo != null)
-        //{
-        //    int tempX = x - 1;
-        //    AstarCellInfo info = tempX < 0 || tempX > heightCnt - 1 ? null : arrInfo[tempX];
-        //    if (info != null && !info.eCellState.Equals(eCellState.Obstacle)
-        //        && !info.eOpenState.Equals(eOpenState.Close))
-        //    {
-        //        info.h = Mathf.Abs(sX - info.x) + Mathf.Abs(sY - info.y);
-        //        info.g = Mathf.Abs(info.x - eX) + Mathf.Abs(info.y - eY);
-        //        info.f = info.h + info.g;
-
-        //        info.eOpenState = eOpenState.Open;
-        //        info.eDirection = eDirection.West;
-        //        info.preAsterCell = _info;
-        //        m_OpenCellList.Add(info);
-        //        m_CellList[tempY][tempX].SetDataView(info);
-        //    }
-
-        //    tempX = x + 1;
-        //    info = tempX < 0 || tempX > heightCnt - 1 ? null : arrInfo[tempX];
-        //    if (info != null && !info.eCellState.Equals(eCellState.Obstacle)
-        //        && !info.eOpenState.Equals(eOpenState.Close))
-        //    {
-        //        info.h = Mathf.Abs(sX - info.x) + Mathf.Abs(sY - info.y);
-        //        info.g = Mathf.Abs(info.x - eX) + Mathf.Abs(info.y - eY);
-        //        info.f = info.h + info.g;
-
-        //        info.eOpenState = eOpenState.Open;
-        //        info.eDirection = eDirection.East;
-        //        info.preAsterCell = _info;
-        //        m_OpenCellList.Add(info);
-        //        m_CellList[tempY][tempX].SetDataView(info);
-        //    }
-        //}
-
-        //tempY = y + 1;
-        //arrInfo = tempY < 0 || tempY > widthCnt - 1 ? null : m_CellInfoList[tempY];
-        //if (arrInfo != null)
-        //{
-        //    int tempX = x - 1;
-        //    AstarCellInfo info = tempX < 0 || tempX > heightCnt - 1 ? null : arrInfo[tempX];
-        //    if (info != null && !info.eCellState.Equals(eCellState.Obstacle)
-        //        && !info.eOpenState.Equals(eOpenState.Close))
-        //    {
-        //        info.h = Mathf.Abs(sX - info.x) + Mathf.Abs(sY - info.y) - 1;
-        //        info.g = Mathf.Abs(info.x - eX) + Mathf.Abs(info.y - eY);
-        //        info.f = info.h + info.g;
-
-        //        info.eOpenState = eOpenState.Open;
-        //        info.eDirection = eDirection.SouthWest;
-        //        info.preAsterCell = _info;
-        //        m_OpenCellList.Add(info);
-        //        m_CellList[tempY][tempX].SetDataView(info);
-        //    }
-
-        //    tempX = x;
-        //    info = tempX < 0 || tempX > heightCnt - 1 ? null : arrInfo[tempX];
-        //    if (info != null && !info.eCellState.Equals(eCellState.Obstacle)
-        //        && !info.eOpenState.Equals(eOpenState.Close))
-        //    {
-        //        info.h = Mathf.Abs(sX - info.x) + Mathf.Abs(sY - info.y);
-        //        info.g = Mathf.Abs(info.x - eX) + Mathf.Abs(info.y - eY);
-        //        info.f = info.h + info.g;
-
-        //        info.eOpenState = eOpenState.Open;
-        //        info.eDirection = eDirection.South;
-        //        info.preAsterCell = _info;
-        //        m_OpenCellList.Add(info);
-        //        m_CellList[tempY][tempX].SetDataView(info);
-        //    }
-
-        //    tempX = x + 1;
-        //    info = tempX < 0 || tempX > heightCnt - 1 ? null : arrInfo[tempX];
-        //    if (info != null && !info.eCellState.Equals(eCellState.Obstacle)
-        //        && !info.eOpenState.Equals(eOpenState.Close))
-        //    {
-        //        info.h = Mathf.Abs(sX - info.x) + Mathf.Abs(sY - info.y) - 1;
-        //        info.g = Mathf.Abs(info.x - eX) + Mathf.Abs(info.y - eY);
-        //        info.f = info.h + info.g;
-
-        //        info.eOpenState = eOpenState.Open;
-        //        info.eDirection = eDirection.SouthEast;
-        //        info.preAsterCell = _info;
-        //        m_OpenCellList.Add(info);
-        //        m_CellList[tempY][tempX].SetDataView(info);
-        //    }
-        //}
-        #endregion
 
         m_OpenCellList.Remove(_info);
         m_CellList[y][x].SetDataView(_info);
